@@ -43,7 +43,7 @@ const journey = defineCollection({
     summary: z.string(),
     /** Skills/technologies picked up during this phase. */
     skills: z.array(z.string()).default([]),
-    /** Technical notes written during this phase, e.g. `fundamentals/cap-theorem`. */
+    /** Technical notes written during this phase, e.g. `architecture/monolith-vs-microservices`. */
     relatedNotes: z.array(reference('notes')).default([]),
     /** Optional external link (project repo, certificate, company). */
     link: z.object({ label: z.string(), href: z.url() }).optional(),

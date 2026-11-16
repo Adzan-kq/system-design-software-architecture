@@ -121,7 +121,18 @@ const years = groupByYear(entries);
                     </div>
                   )}
 
-                  {!compact && (item.hasBody || e.data.link) && (
+                  {!compact && !item.hasBody && e.data.link && (
+                    <a
+                      href={e.data.link.href}
+                      target="_blank"
+                      rel="noopener"
+                      class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline"
+                    >
+                      {e.data.link.label} ↗
+                    </a>
+                  )}
+
+                  {!compact && item.hasBody && (
                     <details class="group mt-4">
                       <summary class="inline-flex cursor-pointer list-none items-center gap-1 text-sm font-medium text-accent select-none [&::-webkit-details-marker]:hidden">
                         <span class="group-open:hidden">Read the reflection</span>

@@ -13,7 +13,7 @@ current: true           # optional, marks an ongoing phase ("Now")
 summary: One or two sentences shown on the timeline.   # required
 skills: [Distributed Systems, Caching]
 relatedNotes:           # optional, ids of notes = path inside notes/ without extension
-  - fundamentals/cap-theorem
+  - architecture/monolith-vs-microservices
 link:                   # optional
   label: Certificate
   href: https://example.com

@@ -9,7 +9,6 @@ import { getNotes, getTopicGroups, overallProgress, url } from '../lib/notes';
 import { getJourney } from '../lib/journey';
 
 const groups = await getTopicGroups();
-const pillars = groups.filter((g) => g.notes.length > 0);
 const stats = overallProgress(groups);
 
 // Most recently tended notes first; planned stubs only fill remaining slots.
@@ -35,10 +34,14 @@ const current = journey.find((e) => e.data.current);
       <SectionHeading
         eyebrow="Learning progress"
         title="Core pillars"
-        description={`${stats.completed} of ${stats.total} notes completed so far. In-progress notes count as half done.`}
+        description={
+          stats.total
+            ? `${stats.completed} of ${stats.total} notes completed so far. In-progress notes count as half done.`
+            : 'The pillars I’m working through. Progress fills in as notes are published.'
+        }
         link={{ href: url('/roadmap/'), label: 'Full roadmap' }}
       />
-      <TopicProgressStrip groups={pillars} />
+      <TopicProgressStrip groups={groups} />
     </section>
 
     <section>

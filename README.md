@@ -20,9 +20,8 @@ Notes live in [`notes/`](./notes), one folder per roadmap topic. See [`notes/_RE
 
 ```
 notes/
-├── fundamentals/cap-theorem.md      → /notes/fundamentals/cap-theorem/
-├── databases/sharding.mdx           → /notes/databases/sharding/
-└── case-studies/url-shortener.md    → /notes/case-studies/url-shortener/
+├── architecture/monolith-vs-microservices.md   → /notes/architecture/monolith-vs-microservices/
+└── databases/sharding.mdx                      → /notes/databases/sharding/
 ```
 
 The `status` field (`completed` | `in-progress` | `planned`) drives the roadmap progress bars and sidebar indicators. Topic order and descriptions are in [`src/data/topics.ts`](./src/data/topics.ts).
@@ -32,7 +31,7 @@ The `status` field (`completed` | `in-progress` | `planned`) drives the roadmap 
 Milestones live in [`journey/`](./journey), one Markdown file each, shown on `/journey/` as a timeline grouped by year.
 See [`journey/_README.md`](./journey/_README.md) for the frontmatter format.
 
-Link an entry to the notes you wrote during that phase with `relatedNotes: [fundamentals/cap-theorem]`.
+Link an entry to the notes you wrote during that phase with `relatedNotes: [architecture/monolith-vs-microservices]`.
 The timeline shows those notes, and each note page links back to the phase. A typo in a reference fails the build.
 
 ## Deploying to GitHub Pages

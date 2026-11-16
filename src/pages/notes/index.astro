@@ -18,13 +18,17 @@ const stats = overallProgress(groups);
       as="h1"
       eyebrow="Digital garden"
       title="System Design Notes"
-      description={`${stats.total} notes across ${pillars.length} pillars, ${stats.progress}% of the way through the roadmap.`}
+      description={
+        stats.total
+          ? `${stats.total} notes across ${pillars.length} pillars, ${stats.progress}% of the way through the roadmap.`
+          : `${groups.length} pillars on the roadmap. Notes are on their way.`
+      }
       link={{ href: url('/roadmap/'), label: 'View roadmap' }}
     />
 
-    <TopicProgressStrip groups={pillars} />
+    <TopicProgressStrip groups={groups} />
 
-    <div class="mt-16 mb-6 flex flex-wrap gap-2" role="group" aria-label="Filter by topic">
+    <div class:list={['mt-16 mb-6 flex flex-wrap gap-2', pillars.length < 2 && 'hidden']} role="group" aria-label="Filter by topic">
       <button type="button" data-filter="all" aria-pressed="true" class="chip">All</button>
       {
         pillars.map((g) => (
@@ -36,7 +40,9 @@ const stats = overallProgress(groups);
       }
     </div>
 
-    <NotesGrid notes={notes} id="notes-grid" />
+    <div class:list={[pillars.length < 2 && 'mt-16']}>
+      <NotesGrid notes={notes} id="notes-grid" />
+    </div>
   </main>
 </BaseLayout>
 

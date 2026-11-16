@@ -15,6 +15,11 @@ export const TOPICS: Topic[] = [
     description: 'Networking basics, latency numbers, CAP theorem, consistency models.',
   },
   {
+    slug: 'architecture',
+    title: 'Architecture Styles',
+    description: 'Monolith, modular monolith, microservices, and monorepo vs polyrepo.',
+  },
+  {
     slug: 'scalability',
     title: 'Scalability',
     description: 'Load balancing, caching, horizontal scaling, rate limiting, CDNs.',
