@@ -7,7 +7,7 @@
  *   - Modules are only created if missing; existing ones (and your notes) are never touched.
  *   - Milestones are only inserted when the table is empty.
  *
- * Run: npx prisma db seed
+ * Run: bun run db:seed
  */
 import 'dotenv/config';
 import { createPrismaClient } from '../src/lib/prisma-client';

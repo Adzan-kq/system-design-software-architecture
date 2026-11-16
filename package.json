@@ -2,6 +2,7 @@
   "name": "adzan-dev",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "bun@1.3.14",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -51,7 +52,6 @@
     "eslint-config-next": "16.4.6",
     "prisma": "^7.10.1",
     "tailwindcss": "4.3.3",
-    "tsx": "^4.23.15",
     "typescript": "^5"
   },
   "engines": {
