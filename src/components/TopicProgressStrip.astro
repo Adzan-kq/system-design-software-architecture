@@ -1,0 +1,42 @@
+---
+/**
+ * Horizontal strip of progress cards, one per learning pillar.
+ * Scrolls horizontally with snap on small screens, becomes a grid on larger ones.
+ */
+import ProgressBar from './ProgressBar.astro';
+import { noteHref, url, type TopicGroup } from '../lib/notes';
+
+interface Props {
+  groups: TopicGroup[];
+}
+
+const { groups } = Astro.props;
+---
+
+<ul
+  class="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] sm:overflow-visible sm:px-0 sm:pb-0"
+>
+  {
+    groups.map((g, i) => (
+      <li class="w-64 shrink-0 snap-start sm:w-auto" data-reveal style={`animation-delay:${i * 70}ms`}>
+        <a
+          href={g.notes[0] ? noteHref(g.notes[0]) : url(`/roadmap/#${g.slug}`)}
+          class="group flex h-full flex-col rounded-2xl border border-line bg-card p-5 transition hover:border-accent/40 hover:shadow-md motion-safe:hover:-translate-y-0.5"
+        >
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs text-ink-subtle">{String(i + 1).padStart(2, '0')}</span>
+            <span class="font-mono text-xs font-medium text-ink-muted">{g.progress}%</span>
+          </div>
+          <h3 class="mt-3 font-display font-bold text-ink group-hover:text-accent">{g.title}</h3>
+          <p class="mt-1 mb-4 line-clamp-2 text-sm text-ink-muted">{g.description}</p>
+          <div class="mt-auto">
+            <ProgressBar value={g.progress} label={`${g.title} progress`} />
+            <p class="mt-2 text-xs text-ink-subtle">
+              {g.notes.length ? `${g.completed} of ${g.notes.length} notes completed` : 'Not started yet'}
+            </p>
+          </div>
+        </a>
+      </li>
+    ))
+  }
+</ul>

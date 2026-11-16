@@ -3,32 +3,40 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 export type JourneyEntry = CollectionEntry<'journey'>;
 export type JourneyType = JourneyEntry['data']['type'];
 
-/** Label + Tailwind classes for each entry type (dot, badge). */
-export const JOURNEY_TYPE_META: Record<JourneyType, { label: string; dot: string; badge: string }> = {
+/**
+ * Label + Tailwind classes per entry type.
+ * `dot` is the milestone dot, `glow` its soft halo, `badge` the type pill.
+ */
+export const JOURNEY_TYPE_META: Record<JourneyType, { label: string; dot: string; glow: string; badge: string }> = {
   career: {
     label: 'Career',
-    dot: 'bg-indigo-500 ring-indigo-500/20',
-    badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300',
+    dot: 'bg-teal-500 dark:bg-teal-400',
+    glow: 'shadow-[0_0_0_4px_var(--color-canvas),0_0_16px_2px_var(--color-teal-500)]',
+    badge: 'bg-teal-50 text-teal-700 dark:bg-teal-400/10 dark:text-teal-300',
   },
   learning: {
     label: 'Learning',
-    dot: 'bg-sky-500 ring-sky-500/20',
-    badge: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300',
+    dot: 'bg-sky-500 dark:bg-sky-400',
+    glow: 'shadow-[0_0_0_4px_var(--color-canvas),0_0_16px_2px_var(--color-sky-500)]',
+    badge: 'bg-sky-50 text-sky-700 dark:bg-sky-400/10 dark:text-sky-300',
   },
   project: {
     label: 'Project',
-    dot: 'bg-violet-500 ring-violet-500/20',
-    badge: 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300',
+    dot: 'bg-violet-500 dark:bg-violet-400',
+    glow: 'shadow-[0_0_0_4px_var(--color-canvas),0_0_16px_2px_var(--color-violet-500)]',
+    badge: 'bg-violet-50 text-violet-700 dark:bg-violet-400/10 dark:text-violet-300',
   },
   certification: {
     label: 'Certification',
-    dot: 'bg-emerald-500 ring-emerald-500/20',
-    badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
+    dot: 'bg-emerald-500 dark:bg-emerald-400',
+    glow: 'shadow-[0_0_0_4px_var(--color-canvas),0_0_16px_2px_var(--color-emerald-500)]',
+    badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300',
   },
   milestone: {
     label: 'Milestone',
-    dot: 'bg-amber-500 ring-amber-500/20',
-    badge: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300',
+    dot: 'bg-amber-500 dark:bg-amber-400',
+    glow: 'shadow-[0_0_0_4px_var(--color-canvas),0_0_16px_2px_var(--color-amber-500)]',
+    badge: 'bg-amber-50 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300',
   },
 };
 

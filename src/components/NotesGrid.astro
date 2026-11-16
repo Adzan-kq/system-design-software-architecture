@@ -1,0 +1,15 @@
+---
+import NoteCard from './NoteCard.astro';
+import type { Note } from '../lib/notes';
+
+interface Props {
+  notes: Note[];
+  id?: string;
+}
+
+const { notes, id } = Astro.props;
+---
+
+<div id={id} class="grid gap-5 md:grid-cols-2">
+  {notes.map((note) => <NoteCard note={note} />)}
+</div>

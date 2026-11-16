@@ -1,13 +1,14 @@
 ---
 /**
- * Three-column docs layout: sidebar · article · table of contents.
- * Collapses to a single column with a toggleable sidebar on small screens.
+ * Note reader layout: sidebar · centered readable column (max-w-3xl) · floating TOC.
+ * Below lg the sidebar becomes a slide-in drawer; below xl the TOC is hidden.
  */
 import type { MarkdownHeading } from 'astro';
 import BaseLayout from './BaseLayout.astro';
 import Sidebar from '../components/Sidebar.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import Mermaid from '../components/Mermaid.astro';
+import CodeBlocks from '../components/CodeBlocks.astro';
 
 interface Props {
   title: string;
@@ -20,48 +21,59 @@ const { title, description, headings = [], currentId } = Astro.props;
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="mx-auto flex max-w-7xl px-4 sm:px-6">
-    <!-- Sidebar -->
+  <div class="mx-auto flex max-w-[90rem] px-4 sm:px-6">
+    <!-- Sidebar / mobile drawer -->
+    <div id="sidebar-backdrop" class="fixed inset-0 top-16 z-30 hidden bg-stone-900/20 backdrop-blur-sm lg:hidden dark:bg-black/40"></div>
     <aside
       id="sidebar"
-      class="fixed inset-x-0 top-14 bottom-0 z-30 hidden overflow-y-auto border-r border-zinc-200 bg-white px-6 py-6 lg:sticky lg:block lg:h-[calc(100dvh-3.5rem)] lg:w-64 lg:shrink-0 lg:bg-transparent lg:px-0 lg:pr-6 dark:border-zinc-800 dark:bg-zinc-950 lg:dark:bg-transparent"
+      class="fixed top-16 bottom-0 left-0 z-30 w-72 -translate-x-full overflow-y-auto border-r border-line bg-canvas px-4 py-6 transition-transform duration-300 lg:sticky lg:h-[calc(100dvh-4rem)] lg:w-60 lg:shrink-0 lg:translate-x-0 lg:border-r-0 lg:bg-transparent lg:px-0 lg:pr-4"
     >
       <Sidebar currentId={currentId} />
     </aside>
 
-    <!-- Main -->
-    <main class="min-w-0 flex-1 py-8 lg:px-10">
+    <!-- Reading column -->
+    <main class="min-w-0 flex-1 py-10 lg:px-12">
       <button
         id="sidebar-toggle"
         type="button"
         aria-controls="sidebar"
         aria-expanded="false"
-        class="mb-6 inline-flex items-center gap-2 rounded-md border border-zinc-200 px-3 py-1.5 text-sm text-zinc-600 lg:hidden dark:border-zinc-800 dark:text-zinc-400"
+        class="mb-6 inline-flex items-center gap-2 rounded-xl border border-line bg-card px-3 py-2 text-sm font-medium text-ink-muted lg:hidden"
       >
         <svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path d="M3 5h14v2H3zm0 4h14v2H3zm0 4h14v2H3z"></path>
         </svg>
-        Menu
+        All notes
       </button>
-      <slot />
+      <div class="mx-auto max-w-3xl">
+        <slot />
+      </div>
     </main>
 
-    <!-- TOC -->
-    <aside class="hidden w-56 shrink-0 xl:block">
-      <div class="sticky top-14 max-h-[calc(100dvh-3.5rem)] overflow-y-auto py-8">
+    <!-- Floating TOC -->
+    <aside class="hidden w-64 shrink-0 xl:block">
+      <div class="sticky top-24 max-h-[calc(100dvh-7rem)] overflow-y-auto pt-10">
         <TableOfContents headings={headings} />
       </div>
     </aside>
   </div>
   <Mermaid />
+  <CodeBlocks />
 </BaseLayout>
 
 <script>
-  const btn = document.getElementById('sidebar-toggle');
-  const sidebar = document.getElementById('sidebar');
-  btn?.addEventListener('click', () => {
-    const open = sidebar!.classList.toggle('hidden') === false;
+  const btn = document.getElementById('sidebar-toggle')!;
+  const sidebar = document.getElementById('sidebar')!;
+  const backdrop = document.getElementById('sidebar-backdrop')!;
+
+  const setOpen = (open: boolean) => {
+    sidebar.classList.toggle('-translate-x-full', !open);
+    backdrop.classList.toggle('hidden', !open);
     btn.setAttribute('aria-expanded', String(open));
     document.body.classList.toggle('overflow-hidden', open);
-  });
+  };
+
+  btn.addEventListener('click', () => setOpen(btn.getAttribute('aria-expanded') !== 'true'));
+  backdrop.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', (e) => e.key === 'Escape' && setOpen(false));
 </script>

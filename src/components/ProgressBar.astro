@@ -10,7 +10,7 @@ const pct = Math.max(0, Math.min(100, value));
 ---
 
 <div
-  class:list={['h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800', className]}
+  class:list={['h-1.5 w-full overflow-hidden rounded-full bg-subtle', className]}
   role="progressbar"
   aria-label={label}
   aria-valuenow={pct}
@@ -20,7 +20,7 @@ const pct = Math.max(0, Math.min(100, value));
   <div
     class:list={[
       'h-full rounded-full transition-[width] duration-700',
-      pct === 100 ? 'bg-emerald-500' : 'bg-indigo-500',
+      pct === 100 ? 'bg-emerald-500 dark:bg-emerald-400' : 'bg-accent',
     ]}
     style={`width: ${pct}%`}
   >

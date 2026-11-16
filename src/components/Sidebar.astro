@@ -1,5 +1,5 @@
 ---
-import { getTopicGroups, noteHref } from '../lib/notes';
+import { getTopicGroups, noteHref, url } from '../lib/notes';
 
 interface Props {
   currentId?: string;
@@ -9,28 +9,29 @@ const { currentId } = Astro.props;
 const groups = (await getTopicGroups()).filter((g) => g.notes.length > 0);
 
 const dot = {
-  completed: 'bg-emerald-500',
-  'in-progress': 'bg-amber-500',
-  planned: 'bg-zinc-300 dark:bg-zinc-600',
+  completed: 'bg-emerald-500 dark:bg-emerald-400',
+  'in-progress': 'bg-amber-500 dark:bg-amber-400',
+  planned: 'bg-line',
 };
 ---
 
-<nav aria-label="Notes" class="space-y-5 text-sm">
+<nav aria-label="Notes" class="space-y-6 text-sm">
+  <a
+    href={url('/notes/')}
+    class="flex items-center gap-2 rounded-lg px-2 py-1.5 font-medium text-ink-muted transition-colors hover:bg-subtle hover:text-ink"
+  >
+    <span aria-hidden="true">←</span> All notes
+  </a>
   {
     groups.map((g) => (
       <details open class="group/topic">
-        <summary class="flex cursor-pointer list-none items-center justify-between py-1 font-semibold text-zinc-900 dark:text-zinc-100 [&::-webkit-details-marker]:hidden">
+        <summary class="flex cursor-pointer list-none items-center justify-between px-2 py-1 font-mono text-[11px] font-semibold tracking-wider text-ink-subtle uppercase [&::-webkit-details-marker]:hidden">
           {g.title}
-          <svg
-            class="size-4 text-zinc-400 transition-transform group-open/topic:rotate-90"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            aria-hidden="true"
-          >
+          <svg class="size-3.5 transition-transform group-open/topic:rotate-90" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path d="M7.3 14.7a1 1 0 0 1 0-1.4L10.6 10 7.3 6.7a1 1 0 0 1 1.4-1.4l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 0 1-1.4 0Z" />
           </svg>
         </summary>
-        <ul class="mt-1 space-y-0.5 border-l border-zinc-200 dark:border-zinc-800">
+        <ul class="mt-1.5 space-y-0.5">
           {g.notes.map((n) => {
             const active = n.id === currentId;
             return (
@@ -38,15 +39,14 @@ const dot = {
                 <a
                   href={noteHref(n)}
                   aria-current={active ? 'page' : undefined}
-                  title={n.data.status}
                   class:list={[
-                    '-ml-px flex items-center gap-2 border-l py-1.5 pr-2 pl-4 transition-colors',
+                    'flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors',
                     active
-                      ? 'border-indigo-500 font-medium text-indigo-600 dark:text-indigo-400'
-                      : 'border-transparent text-zinc-600 hover:border-zinc-400 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white',
+                      ? 'bg-accent-soft font-medium text-accent'
+                      : 'text-ink-muted hover:bg-subtle hover:text-ink',
                   ]}
                 >
-                  <span class:list={['size-1.5 shrink-0 rounded-full', dot[n.data.status]]} aria-hidden="true" />
+                  <span class:list={['size-1.5 shrink-0 rounded-full', dot[n.data.status]]} title={n.data.status} />
                   <span class="truncate">{n.data.title}</span>
                 </a>
               </li>

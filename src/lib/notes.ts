@@ -79,3 +79,14 @@ export function overallProgress(groups: TopicGroup[]) {
     progress: progressOf(all),
   };
 }
+
+/** Estimated reading time in minutes: ~200 wpm for prose, plus ~10 s per code/diagram line. */
+export function readingTime(note: Note): number {
+  const body = note.body ?? '';
+  const codeLines = (body.match(/```[\s\S]*?```/g) ?? []).reduce((n, b) => n + b.split('\n').length, 0);
+  const words = body.replace(/```[\s\S]*?```/g, ' ').split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200 + codeLines / 6));
+}
+
+const topicTitles = new Map(TOPICS.map((t) => [t.slug, t.title]));
+export const topicTitle = (note: Note) => topicTitles.get(topicOf(note)) ?? topicOf(note).replace(/-/g, ' ');

@@ -4,52 +4,166 @@
 /* Class-based dark mode: <html class="dark"> */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ==========================================================================
+   Design tokens: "Warm Tech"
+   Components use these semantic names (bg-canvas, bg-card, border-line,
+   text-ink, text-ink-muted, text-accent, ...) instead of raw palette colors,
+   so light/dark mode is defined in exactly one place.
+   ========================================================================== */
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --color-status-completed: var(--color-emerald-500);
-  --color-status-progress: var(--color-amber-500);
-  --color-status-planned: var(--color-zinc-400);
+  /* Light mode values (dark overrides below) */
+  --color-canvas: #faf9f6;                    /* page background */
+  --color-card: #ffffff;                      /* cards, panels */
+  --color-subtle: var(--color-stone-100);     /* chips, inline code, hover fills */
+  --color-line: var(--color-stone-200);       /* borders, dividers */
+  --color-ink: var(--color-stone-900);        /* headings, primary text */
+  --color-ink-body: var(--color-stone-700);   /* long-form reading text */
+  --color-ink-muted: var(--color-stone-600);  /* secondary text */
+  --color-ink-subtle: var(--color-stone-500); /* meta, captions */
+  --color-accent: var(--color-teal-600);
+  --color-accent-hover: var(--color-teal-700);
+  --color-accent-contrast: #ffffff;           /* text on accent buttons */
+  --color-accent-soft: var(--color-teal-50);
+  --color-code-bg: #fdfcfa;
+
+  --animate-glow: glow 2.4s ease-in-out infinite;
+  @keyframes glow {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 0; transform: scale(2.2); }
+  }
+}
+
+.dark {
+  --color-canvas: var(--color-slate-900);
+  --color-card: color-mix(in oklab, var(--color-slate-800) 80%, transparent);
+  --color-subtle: var(--color-slate-800);
+  --color-line: var(--color-slate-700);
+  --color-ink: var(--color-slate-50);
+  --color-ink-body: var(--color-slate-300);
+  --color-ink-muted: var(--color-slate-400);
+  --color-ink-subtle: var(--color-slate-500);
+  --color-accent: var(--color-teal-400);
+  --color-accent-hover: var(--color-teal-300);
+  --color-accent-contrast: var(--color-slate-900);
+  --color-accent-soft: color-mix(in oklab, var(--color-teal-400) 12%, transparent);
+  --color-code-bg: color-mix(in oklab, var(--color-slate-950) 55%, transparent);
+  color-scheme: dark;
 }
 
 @layer base {
   html {
-    scroll-padding-top: 5rem;
+    scroll-padding-top: 5.5rem;
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-white text-zinc-800 antialiased dark:bg-zinc-950 dark:text-zinc-200;
+    @apply bg-canvas font-sans leading-relaxed text-ink antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
   }
   ::selection {
-    @apply bg-indigo-500/20;
+    @apply bg-accent/20;
+  }
+  :focus-visible {
+    @apply rounded-md outline-2 outline-offset-2 outline-accent;
   }
 }
 
-/* ---------- Shiki dual theme (see shikiConfig in astro.config.mjs) ---------- */
-.astro-code,
+/* Smooth color crossfade, applied only while the theme is being toggled. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease, fill 300ms ease !important;
+}
+
+/* Scroll reveal: only hides content when JS is running and motion is allowed.
+   Uses an animation (not a transition) so it never overrides hover transitions. */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-reveal]:not(.is-visible) {
+    opacity: 0;
+  }
+  .js [data-reveal].is-visible {
+    animation: reveal 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ==========================================================================
+   Article typography: map @tailwindcss/typography onto the tokens
+   (unlayered so it wins over the plugin's defaults, in both themes).
+   ========================================================================== */
+.prose {
+  --tw-prose-body: var(--color-ink-body);
+  --tw-prose-headings: var(--color-ink);
+  --tw-prose-lead: var(--color-ink-muted);
+  --tw-prose-links: var(--color-accent);
+  --tw-prose-bold: var(--color-ink);
+  --tw-prose-counters: var(--color-ink-subtle);
+  --tw-prose-bullets: var(--color-ink-subtle);
+  --tw-prose-hr: var(--color-line);
+  --tw-prose-quotes: var(--color-ink);
+  --tw-prose-quote-borders: var(--color-accent);
+  --tw-prose-captions: var(--color-ink-subtle);
+  --tw-prose-kbd: var(--color-ink);
+  --tw-prose-code: var(--color-ink);
+  --tw-prose-th-borders: var(--color-line);
+  --tw-prose-td-borders: var(--color-line);
+  line-height: 1.75;
+}
+.prose :where(h2, h3, h4) {
+  @apply font-display;
+}
+.prose :where(a) {
+  @apply font-medium underline decoration-accent/30 underline-offset-4 transition-colors hover:decoration-accent;
+}
+.prose :where(code):not(:where(pre code)) {
+  @apply rounded-md border border-line bg-subtle px-1.5 py-0.5 font-normal before:content-none after:content-none;
+}
+.prose :where(blockquote) {
+  @apply rounded-r-lg bg-accent-soft py-1 font-normal not-italic;
+}
+.prose :where(table) {
+  @apply text-sm;
+}
+
+/* ---------- Code blocks (Shiki dual theme, see astro.config.mjs) ---------- */
+.astro-code {
+  color: var(--shiki-light);
+  background-color: var(--color-code-bg) !important;
+}
 .astro-code span {
   color: var(--shiki-light);
-  background-color: var(--shiki-light-bg);
 }
 .dark .astro-code,
 .dark .astro-code span {
   color: var(--shiki-dark);
-  background-color: var(--shiki-dark-bg);
 }
-
-/* ---------- Article typography tweaks ---------- */
+/* Fallback before/without JS; CodeBlocks.astro then wraps it in .code-block. */
 .prose pre.astro-code {
-  @apply rounded-lg border border-zinc-200 text-[0.85rem] leading-relaxed dark:border-zinc-800;
+  @apply rounded-xl border border-line p-4 font-mono text-[0.85rem] leading-relaxed;
 }
-.prose :where(code):not(:where(pre code)) {
-  @apply rounded bg-zinc-100 px-1.5 py-0.5 font-normal before:content-none after:content-none dark:bg-zinc-800;
+.code-block {
+  @apply relative my-6 overflow-hidden rounded-xl border border-line bg-code-bg;
+}
+.code-block pre.astro-code {
+  @apply m-0 overflow-x-auto rounded-none border-0 p-4 font-mono text-[0.85rem] leading-relaxed;
+}
+.code-block-header {
+  @apply flex items-center justify-between border-b border-line px-4 py-1.5 font-mono text-xs text-ink-subtle;
 }
 
 /* ---------- Mermaid ---------- */
 .mermaid-diagram {
-  @apply my-6 flex justify-center overflow-x-auto rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900;
+  @apply my-8 flex justify-center overflow-x-auto rounded-2xl border border-line bg-card p-6 shadow-sm;
 }
 .mermaid-diagram:not([data-rendered]) {
-  @apply min-h-24 font-mono text-xs whitespace-pre text-zinc-400;
+  @apply min-h-24 font-mono text-xs whitespace-pre text-ink-subtle;
 }

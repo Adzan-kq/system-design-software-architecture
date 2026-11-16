@@ -1,14 +1,14 @@
 ---
 /**
- * Vertical timeline grouped by year. Each entry can be expanded to read the
- * full story (Markdown body) and shows links to the technical notes written
- * during that phase.
+ * Vertical developer-journey timeline: year badges, glowing milestone dots,
+ * phase cards with reflections. Each card can expand to show the full story
+ * (Markdown body) and the technical notes written during that phase.
  *
- * `compact` renders a short, non-expandable version for the home page.
+ * `compact` renders a lighter, non-expandable version for the home page.
  */
 import { getEntries, render } from 'astro:content';
 import { JOURNEY_TYPE_META, formatRange, groupByYear, type JourneyEntry } from '../lib/journey';
-import { noteHref, url } from '../lib/notes';
+import { noteHref } from '../lib/notes';
 
 interface Props {
   entries: JourneyEntry[];
@@ -17,114 +17,137 @@ interface Props {
 
 const { entries, compact = false } = Astro.props;
 
-const items = await Promise.all(
-  entries.map(async (entry) => ({
-    entry,
-    Content: compact ? null : (await render(entry)).Content,
-    hasBody: !!entry.body?.trim(),
-    notes: compact ? [] : await getEntries(entry.data.relatedNotes),
-  })),
+const items = new Map(
+  await Promise.all(
+    entries.map(
+      async (entry) =>
+        [
+          entry.id,
+          {
+            Content: compact ? null : (await render(entry)).Content,
+            hasBody: !!entry.body?.trim(),
+            notes: compact ? [] : await getEntries(entry.data.relatedNotes),
+          },
+        ] as const,
+    ),
+  ),
 );
-const byId = new Map(items.map((i) => [i.entry.id, i]));
 const years = groupByYear(entries);
 ---
 
-<div class="space-y-10">
+<div class="relative">
+  <!-- The continuous rail behind all dots -->
+  <div
+    class="absolute top-2 bottom-2 left-3 w-px -translate-x-1/2 bg-gradient-to-b from-accent/60 via-line to-transparent sm:left-[8.25rem]"
+    aria-hidden="true"
+  >
+  </div>
+
   {
     years.map(([year, yearEntries]) => (
-      <section aria-labelledby={`year-${year}`} data-year-group>
-        <h2
-          id={`year-${year}`}
-          class="sticky top-14 z-10 -mx-1 mb-4 bg-white/90 px-1 py-2 font-mono text-sm font-semibold text-zinc-500 backdrop-blur dark:bg-zinc-950/90"
-        >
-          {year}
-        </h2>
+      <section aria-label={String(year)} data-year-group class="relative">
+        <!-- Year badge -->
+        <div class="relative mb-6 grid grid-cols-[1.5rem_1fr] gap-x-4 sm:mb-8 sm:grid-cols-[6.5rem_1.5rem_1fr]">
+          <span class="relative z-10 justify-self-start rounded-full border border-accent/30 bg-canvas px-3 py-1 font-mono text-xs font-semibold text-accent shadow-sm sm:col-start-2 sm:justify-self-center">
+            {year}
+          </span>
+        </div>
 
-        <ol class="relative ml-2 border-l border-zinc-200 dark:border-zinc-800">
+        <ol class="space-y-6 pb-10">
           {yearEntries.map((e) => {
-            const { Content, hasBody, notes } = byId.get(e.id)!;
+            const item = items.get(e.id)!;
             const meta = JOURNEY_TYPE_META[e.data.type];
             return (
-              <li id={`j-${e.id}`} class="relative scroll-mt-28 pb-8 pl-8 last:pb-0" data-type={e.data.type}>
-                <span
+              <li
+                id={`j-${e.id}`}
+                data-type={e.data.type}
+                data-reveal
+                class="relative grid grid-cols-[1.5rem_1fr] gap-x-4 sm:grid-cols-[6.5rem_1.5rem_1fr]"
+              >
+                {/* Date (left column on desktop) */}
+                <time class="hidden pt-[1.15rem] text-right font-mono text-xs leading-5 whitespace-pre-line text-ink-subtle sm:block">
+                  {formatRange(e.data).replace(' — ', '\n— ')}
+                </time>
+
+                {/* Glowing dot */}
+                <span class="relative mt-[1.45rem] flex size-3.5 justify-self-center" aria-hidden="true">
+                  {e.data.current && <span class:list={['absolute inset-0 animate-glow rounded-full', meta.dot]} />}
+                  <span class:list={['relative size-3.5 rounded-full', meta.dot, meta.glow]} />
+                </span>
+
+                {/* Card */}
+                <article
                   class:list={[
-                    'absolute top-1.5 -left-[7px] size-3.5 rounded-full ring-4',
-                    meta.dot,
-                    e.data.current && 'animate-pulse',
+                    'rounded-2xl border bg-card p-5 transition hover:shadow-md',
+                    e.data.current ? 'border-accent/40' : 'border-line',
                   ]}
-                  aria-hidden="true"
-                />
-
-                <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <time class="font-mono text-xs text-zinc-500">{formatRange(e.data)}</time>
-                  <span class:list={['rounded px-1.5 py-0.5 text-[11px] font-medium', meta.badge]}>
-                    {meta.label}
-                  </span>
-                  {e.data.current && (
-                    <span class="text-[11px] font-medium text-emerald-600 dark:text-emerald-400">● Now</span>
-                  )}
-                </div>
-
-                <h3 class="mt-1.5 font-semibold text-zinc-900 dark:text-zinc-100">{e.data.title}</h3>
-                <p class="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{e.data.summary}</p>
-
-                {!compact && e.data.skills.length > 0 && (
-                  <ul class="mt-3 flex flex-wrap gap-1.5" aria-label="Skills">
-                    {e.data.skills.map((s) => (
-                      <li class="rounded-md border border-zinc-200 px-2 py-0.5 font-mono text-[11px] text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-                        {s}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                {!compact && notes.length > 0 && (
-                  <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
-                    <span class="text-xs text-zinc-500">Notes from this phase:</span>
-                    {notes.map((n) => (
-                      <a
-                        href={noteHref(n)}
-                        class="rounded-md bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 hover:bg-indigo-50 hover:text-indigo-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-300"
-                      >
-                        {n.data.title} →
-                      </a>
-                    ))}
+                >
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class:list={['rounded-md px-2 py-0.5 font-mono text-[11px] font-medium', meta.badge]}>
+                      {meta.label}
+                    </span>
+                    <time class="font-mono text-[11px] text-ink-subtle sm:hidden">{formatRange(e.data)}</time>
+                    {e.data.current && (
+                      <span class="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-accent">
+                        <span class="size-1.5 rounded-full bg-accent" /> Now
+                      </span>
+                    )}
                   </div>
-                )}
 
-                {!compact && (hasBody || e.data.link) && (
-                  <details class="group mt-3">
-                    <summary class="inline-flex cursor-pointer list-none items-center gap-1 text-sm font-medium text-indigo-600 select-none dark:text-indigo-400 [&::-webkit-details-marker]:hidden">
-                      <span class="group-open:hidden">Read the story</span>
-                      <span class="hidden group-open:inline">Hide</span>
-                      <svg class="size-4 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z" />
-                      </svg>
-                    </summary>
-                    <div class="prose prose-sm prose-zinc mt-3 max-w-none dark:prose-invert prose-a:text-indigo-600 dark:prose-a:text-indigo-400">
-                      {Content && <Content />}
-                      {e.data.link && (
-                        <p>
-                          <a href={e.data.link.href} target="_blank" rel="noopener">
-                            {e.data.link.label} ↗
+                  <h3 class="mt-3 text-lg font-bold text-ink">{e.data.title}</h3>
+                  <p class="mt-1.5 leading-relaxed text-ink-muted">{e.data.summary}</p>
+
+                  {!compact && e.data.skills.length > 0 && (
+                    <ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Skills">
+                      {e.data.skills.map((s) => (
+                        <li class="rounded-md border border-line px-2 py-0.5 font-mono text-[11px] text-ink-muted">{s}</li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {!compact && item.notes.length > 0 && (
+                    <div class="mt-4 border-t border-line pt-4">
+                      <p class="mb-2 text-xs font-medium text-ink-subtle">Notes from this phase</p>
+                      <div class="flex flex-wrap gap-2">
+                        {item.notes.map((n) => (
+                          <a
+                            href={noteHref(n)}
+                            class="rounded-lg bg-subtle px-2.5 py-1 text-xs font-medium text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent"
+                          >
+                            {n.data.title} →
                           </a>
-                        </p>
-                      )}
+                        ))}
+                      </div>
                     </div>
-                  </details>
-                )}
+                  )}
+
+                  {!compact && (item.hasBody || e.data.link) && (
+                    <details class="group mt-4">
+                      <summary class="inline-flex cursor-pointer list-none items-center gap-1 text-sm font-medium text-accent select-none [&::-webkit-details-marker]:hidden">
+                        <span class="group-open:hidden">Read the reflection</span>
+                        <span class="hidden group-open:inline">Hide reflection</span>
+                        <svg class="size-4 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path d="M5.3 7.3a1 1 0 0 1 1.4 0L10 10.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 0-1.4Z" />
+                        </svg>
+                      </summary>
+                      <div class="prose prose-sm mt-3 max-w-none">
+                        {item.Content && <item.Content />}
+                        {e.data.link && (
+                          <p>
+                            <a href={e.data.link.href} target="_blank" rel="noopener">
+                              {e.data.link.label} ↗
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    </details>
+                  )}
+                </article>
               </li>
             );
           })}
         </ol>
       </section>
     ))
-  }
-  {
-    compact && (
-      <a href={url('/journey/')} class="inline-block text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
-        See the full journey →
-      </a>
-    )
   }
 </div>

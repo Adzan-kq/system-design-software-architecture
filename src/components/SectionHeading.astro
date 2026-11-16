@@ -1,0 +1,30 @@
+---
+/** Consistent section header: eyebrow · title · description · optional link. */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  link?: { href: string; label: string };
+  as?: 'h1' | 'h2';
+}
+
+const { eyebrow, title, description, link, as: Tag = 'h2' } = Astro.props;
+---
+
+<div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+  <div class="max-w-2xl">
+    {eyebrow && <p class="mb-2 font-mono text-xs font-medium tracking-wider text-accent uppercase">{eyebrow}</p>}
+    <Tag class:list={['font-bold text-ink', Tag === 'h1' ? 'text-4xl sm:text-5xl' : 'text-2xl sm:text-3xl']}>
+      {title}
+    </Tag>
+    {description && <p class="mt-2 text-ink-muted">{description}</p>}
+  </div>
+  {
+    link && (
+      <a href={link.href} class="group inline-flex items-center gap-1 text-sm font-medium text-accent">
+        {link.label}
+        <span class="transition-transform group-hover:translate-x-0.5" aria-hidden="true">→</span>
+      </a>
+    )
+  }
+</div>
