@@ -1,0 +1,122 @@
+---
+import { render } from 'astro:content';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { SITE } from '../../config';
+import { getTopicGroups, noteHref, url } from '../../lib/notes';
+import { getJourneyForNote, formatRange } from '../../lib/journey';
+
+export async function getStaticPaths() {
+  const groups = await getTopicGroups();
+  // Flatten in sidebar order so prev/next follow the roadmap.
+  const ordered = groups.flatMap((g) => g.notes.map((note) => ({ note, topic: g.title })));
+
+  return ordered.map(({ note, topic }, i) => ({
+    params: { slug: note.id },
+    props: { note, topic, prev: ordered[i - 1]?.note, next: ordered[i + 1]?.note },
+  }));
+}
+
+const { note, topic, prev, next } = Astro.props;
+const { Content, headings } = await render(note);
+const journeyPhases = await getJourneyForNote(note.id);
+const editUrl = `${SITE.repo}/edit/${SITE.branch}/${note.filePath}`;
+---
+
+<DocsLayout
+  title={note.data.title}
+  description={note.data.description}
+  headings={headings}
+  currentId={note.id}
+>
+  <article class="mx-auto max-w-3xl">
+    <header class="mb-8 border-b border-zinc-200 pb-6 dark:border-zinc-800">
+      <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">{topic}</p>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
+        {note.data.title}
+      </h1>
+      {
+        note.data.description && (
+          <p class="mt-3 text-lg text-zinc-600 dark:text-zinc-400">{note.data.description}</p>
+        )
+      }
+      <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-zinc-500">
+        <StatusBadge status={note.data.status} />
+        {
+          note.data.updated && (
+            <time datetime={note.data.updated.toISOString()}>
+              Updated {note.data.updated.toLocaleDateString('en-US', { dateStyle: 'medium' })}
+            </time>
+          )
+        }
+        {
+          note.data.tags.map((t) => (
+            <span class="rounded bg-zinc-100 px-2 py-0.5 font-mono text-xs dark:bg-zinc-800">#{t}</span>
+          ))
+        }
+      </div>
+    </header>
+
+    <div
+      class="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-20 prose-headings:tracking-tight prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-pre:p-4"
+    >
+      <Content />
+    </div>
+
+    {
+      journeyPhases.length > 0 && (
+        <aside class="mt-12 rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900/50">
+          <p class="font-medium text-zinc-900 dark:text-zinc-100">Part of my journey</p>
+          <ul class="mt-2 space-y-1">
+            {journeyPhases.map((j) => (
+              <li>
+                <a href={url(`/journey/#j-${j.id}`)} class="text-indigo-600 hover:underline dark:text-indigo-400">
+                  {j.data.title}
+                </a>
+                <span class="ml-2 font-mono text-xs text-zinc-500">{formatRange(j.data)}</span>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )
+    }
+
+    <footer class="mt-12 border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <a
+        href={editUrl}
+        target="_blank"
+        rel="noopener"
+        class="text-sm text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+      >
+        ✎ Edit this page on GitHub
+      </a>
+
+      <nav class="mt-6 grid gap-4 sm:grid-cols-2" aria-label="Pagination">
+        {
+          prev ? (
+            <a
+              href={noteHref(prev)}
+              class="rounded-lg border border-zinc-200 p-4 hover:border-indigo-400 dark:border-zinc-800"
+            >
+              <span class="text-xs text-zinc-500">← Previous</span>
+              <span class="block font-medium">{prev.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a
+              href={noteHref(next)}
+              class="rounded-lg border border-zinc-200 p-4 text-right hover:border-indigo-400 dark:border-zinc-800"
+            >
+              <span class="text-xs text-zinc-500">Next →</span>
+              <span class="block font-medium">{next.data.title}</span>
+            </a>
+          )
+        }
+      </nav>
+    </footer>
+  </article>
+</DocsLayout>

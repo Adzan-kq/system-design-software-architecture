@@ -1,0 +1,27 @@
+---
+import { STATUS_LABEL, type Status } from '../lib/notes';
+
+interface Props {
+  status: Status;
+  size?: 'sm' | 'md';
+}
+
+const { status, size = 'md' } = Astro.props;
+
+const styles: Record<Status, string> = {
+  completed: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-400/20',
+  'in-progress': 'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-400/20',
+  planned: 'bg-zinc-50 text-zinc-600 ring-zinc-500/20 dark:bg-zinc-400/10 dark:text-zinc-400 dark:ring-zinc-400/20',
+};
+---
+
+<span
+  class:list={[
+    'inline-flex shrink-0 items-center gap-1.5 rounded-full font-medium ring-1 ring-inset',
+    size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-0.5 text-xs',
+    styles[status],
+  ]}
+>
+  <span class="size-1.5 rounded-full bg-current" aria-hidden="true"></span>
+  {STATUS_LABEL[status]}
+</span>

@@ -1,0 +1,52 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const headings = Astro.props.headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+{
+  headings.length > 0 && (
+    <nav aria-label="On this page" class="text-sm">
+      <p class="mb-3 font-semibold text-zinc-900 dark:text-zinc-100">On this page</p>
+      <ul class="space-y-2" id="toc">
+        {headings.map((h) => (
+          <li class:list={[h.depth === 3 && 'pl-3']}>
+            <a
+              href={`#${h.slug}`}
+              data-slug={h.slug}
+              class="block text-zinc-500 transition-colors hover:text-zinc-900 data-[active]:font-medium data-[active]:text-indigo-600 dark:text-zinc-400 dark:hover:text-white dark:data-[active]:text-indigo-400"
+            >
+              {h.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  // Highlight the TOC entry for the section currently in view.
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('#toc a[data-slug]')];
+  const targets = links
+    .map((a) => document.getElementById(a.dataset.slug!))
+    .filter((el): el is HTMLElement => !!el);
+
+  if (targets.length) {
+    const setActive = (id: string) =>
+      links.forEach((a) => a.toggleAttribute('data-active', a.dataset.slug === id));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting);
+        if (visible.length) setActive(visible[0].target.id);
+      },
+      { rootMargin: '-80px 0px -70% 0px' },
+    );
+    targets.forEach((t) => observer.observe(t));
+  }
+</script>

@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import { SITE } from '../config';
+import { url } from '../lib/notes';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = SITE.description } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={url('/favicon.svg')} />
+    <link rel="sitemap" href={url('/sitemap-index.xml')} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+
+    <!-- Apply theme before paint to avoid a light/dark flash. -->
+    <script is:inline>
+      (() => {
+        let stored = null;
+        try { stored = localStorage.getItem('theme'); } catch {}
+        const dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', dark);
+      })();
+    </script>
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <Header />
+    <div class="flex-1"><slot /></div>
+    <footer class="border-t border-zinc-200 py-8 text-sm text-zinc-500 dark:border-zinc-800">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 sm:px-6">
+        <p>© {new Date().getFullYear()} {SITE.author} · Built with Astro &amp; Tailwind CSS</p>
+        <nav class="flex gap-4" aria-label="Footer">
+          <a href={url('/journey/')} class="hover:text-zinc-900 dark:hover:text-white">Journey</a>
+          <a href={url('/roadmap/')} class="hover:text-zinc-900 dark:hover:text-white">Roadmap</a>
+          <a href={SITE.repo} target="_blank" rel="noopener" class="hover:text-zinc-900 dark:hover:text-white">GitHub ↗</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>
