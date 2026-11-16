@@ -6,12 +6,13 @@ import { DeleteButton } from '@/components/admin/DeleteButton';
 import { StatusSelect } from '@/components/admin/StatusSelect';
 import { Flash, PageHeader } from '@/components/admin/ui';
 import type { ModuleStatus } from '@/generated/prisma/enums';
-import { db } from '@/lib/db';
+import { getAdminDb } from '@/lib/admin-db';
 import { STATUSES, STATUS_LABEL, formatDate, readingTime } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'Modules' };
 
 export default async function AdminModulesPage({ searchParams }: PageProps<'/admin/modules'>) {
+  const db = await getAdminDb();
   const sp = await searchParams;
   const pillarSlug = typeof sp.pillar === 'string' ? sp.pillar : '';
   const status = STATUSES.includes(sp.status as ModuleStatus) ? (sp.status as ModuleStatus) : undefined;

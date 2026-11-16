@@ -4,11 +4,12 @@ import { PageHeader } from '@/components/admin/ui';
 import { PillarIcon } from '@/components/site/PillarIcon';
 import { ProgressBar } from '@/components/site/ProgressBar';
 import { StatusBadge } from '@/components/site/StatusBadge';
-import { db } from '@/lib/db';
+import { getAdminDb } from '@/lib/admin-db';
 import { formatDate, percent } from '@/lib/format';
 
 // Admin reads are uncached on purpose: always live from Neon.
 export default async function AdminOverviewPage() {
+  const db = await getAdminDb();
   const [byStatus, pillars, recent, milestoneCount] = await Promise.all([
     db.module.groupBy({ by: ['status'], _count: { _all: true } }),
     db.pillar.findMany({

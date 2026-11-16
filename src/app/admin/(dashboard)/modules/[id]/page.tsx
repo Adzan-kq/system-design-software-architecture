@@ -4,12 +4,13 @@ import { deleteModule } from '@/actions/modules';
 import { DeleteButton } from '@/components/admin/DeleteButton';
 import { ModuleForm } from '@/components/admin/ModuleForm';
 import { PageHeader } from '@/components/admin/ui';
-import { db } from '@/lib/db';
+import { getAdminDb } from '@/lib/admin-db';
 import { formatDate } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'Edit module' };
 
 export default async function EditModulePage({ params }: PageProps<'/admin/modules/[id]'>) {
+  const db = await getAdminDb();
   const { id } = await params;
   const [module, pillars] = await Promise.all([
     db.module.findUnique({ where: { id } }),

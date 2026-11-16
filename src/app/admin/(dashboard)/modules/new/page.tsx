@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { ModuleForm } from '@/components/admin/ModuleForm';
 import { PageHeader } from '@/components/admin/ui';
-import { db } from '@/lib/db';
+import { getAdminDb } from '@/lib/admin-db';
 
 export const metadata: Metadata = { title: 'New module' };
 
 export default async function NewModulePage({ searchParams }: PageProps<'/admin/modules/new'>) {
+  const db = await getAdminDb();
   const { pillar } = await searchParams;
   const pillars = await db.pillar.findMany({ orderBy: { order: 'asc' }, select: { id: true, slug: true, title: true } });
   const defaultPillarId = pillars.find((p) => p.slug === pillar)?.id;

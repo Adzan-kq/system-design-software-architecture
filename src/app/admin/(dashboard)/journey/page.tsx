@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { deleteMilestone } from '@/actions/milestones';
 import { DeleteButton } from '@/components/admin/DeleteButton';
 import { Flash, PageHeader } from '@/components/admin/ui';
-import { db } from '@/lib/db';
+import { getAdminDb } from '@/lib/admin-db';
 import { MILESTONE_TYPE_LABEL, formatRange } from '@/lib/format';
 
 export const metadata: Metadata = { title: 'Journey' };
 
 export default async function AdminJourneyPage({ searchParams }: PageProps<'/admin/journey'>) {
+  const db = await getAdminDb();
   const { saved } = await searchParams;
   const milestones = await db.journeyMilestone.findMany({ orderBy: [{ isCurrent: 'desc' }, { startDate: 'desc' }] });
 
