@@ -1,0 +1,91 @@
+// Adzan.dev: Engineering Learning Hub
+// Database: Neon Serverless PostgreSQL
+//
+// Prisma 7 note: connection URLs no longer live in this file.
+//   - Migrations / CLI  → `datasource.url` in prisma.config.ts  (DIRECT_URL, unpooled)
+//   - App runtime       → driver adapter in src/lib/db.ts         (DATABASE_URL, pooled)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ModuleStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum MilestoneType {
+  CAREER
+  LEARNING
+  PROJECT
+  CERTIFICATION
+  MILESTONE
+}
+
+/// One of the 6 core engineering pillars. Seeded, rarely edited.
+model Pillar {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  /// Display order on the home grid (1–6).
+  order       Int      @unique
+  modules     Module[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// A learning module (topic) inside a pillar, with its Markdown study notes.
+model Module {
+  id          String       @id @default(cuid())
+  slug        String
+  title       String
+  summary     String?
+  /// Markdown study notes (supports ```mermaid diagrams).
+  content     String       @default("") @db.Text
+  status      ModuleStatus @default(PLANNED)
+  /// Sort order inside its pillar.
+  order       Int          @default(0)
+  tags        String[]     @default([])
+  /// Set automatically when status first becomes COMPLETED.
+  completedAt DateTime?
+  pillarId    String
+  pillar      Pillar       @relation(fields: [pillarId], references: [id], onDelete: Restrict)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([pillarId, slug])
+  @@index([pillarId, order])
+  @@index([status])
+  @@index([updatedAt])
+}
+
+/// A milestone on the public developer-journey timeline.
+model JourneyMilestone {
+  id         String        @id @default(cuid())
+  title      String
+  type       MilestoneType
+  summary    String
+  /// Optional longer personal reflection (Markdown).
+  reflection String?       @db.Text
+  startDate  DateTime      @db.Date
+  /// End of a phase; leave empty for one-off milestones.
+  endDate    DateTime?     @db.Date
+  /// Ongoing phase, shown as "Now".
+  isCurrent  Boolean       @default(false)
+  skills     String[]      @default([])
+  linkLabel  String?
+  linkUrl    String?
+  /// Show on the home page.
+  featured   Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([startDate])
+}

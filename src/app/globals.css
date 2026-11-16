@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Class-based dark mode: <html class="dark"> (set before paint in layout.tsx) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   Design tokens: "Warm Minimalist Tech"
+   Components use semantic names (bg-canvas, bg-card, border-line, text-ink,
+   text-ink-muted, text-accent, ...) so light/dark lives in one place.
+   Font variables (--font-inter etc.) come from next/font in layout.tsx.
+   ========================================================================== */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-canvas: #faf9f6;
+  --color-card: #ffffff;
+  --color-subtle: var(--color-stone-100);
+  --color-line: var(--color-stone-200);
+  --color-ink: var(--color-stone-900);
+  --color-ink-body: var(--color-stone-700);
+  --color-ink-muted: var(--color-stone-600);
+  --color-ink-subtle: var(--color-stone-500);
+  --color-accent: var(--color-teal-600);
+  --color-accent-hover: var(--color-teal-700);
+  --color-accent-contrast: #ffffff;
+  --color-accent-soft: var(--color-teal-50);
+  --color-code-bg: #fdfcfa;
+  --color-danger: var(--color-red-600);
+  --color-danger-soft: var(--color-red-50);
+
+  --animate-glow: glow 2.4s ease-in-out infinite;
+  @keyframes glow {
+    0%, 100% { opacity: 0.55; transform: scale(1); }
+    50% { opacity: 0; transform: scale(2.2); }
+  }
+}
+
+.dark {
+  --color-canvas: var(--color-slate-900);
+  --color-card: color-mix(in oklab, var(--color-slate-800) 80%, transparent);
+  --color-subtle: var(--color-slate-800);
+  --color-line: var(--color-slate-700);
+  --color-ink: var(--color-slate-50);
+  --color-ink-body: var(--color-slate-300);
+  --color-ink-muted: var(--color-slate-400);
+  --color-ink-subtle: var(--color-slate-500);
+  --color-accent: var(--color-teal-400);
+  --color-accent-hover: var(--color-teal-300);
+  --color-accent-contrast: var(--color-slate-900);
+  --color-accent-soft: color-mix(in oklab, var(--color-teal-400) 12%, transparent);
+  --color-code-bg: color-mix(in oklab, var(--color-slate-950) 55%, transparent);
+  --color-danger: var(--color-red-400);
+  --color-danger-soft: color-mix(in oklab, var(--color-red-400) 12%, transparent);
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 5.5rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-canvas font-sans leading-relaxed text-ink antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display tracking-tight;
+  }
+  ::selection {
+    @apply bg-accent/20;
+  }
+  :focus-visible {
+    @apply rounded-md outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+/* Smooth color crossfade, applied only while the theme is being toggled. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease, fill 300ms ease !important;
+}
+
+/* ==========================================================================
+   Article typography: map @tailwindcss/typography onto the tokens
+   (unlayered so it wins over the plugin defaults in both themes).
+   ========================================================================== */
+.prose {
+  --tw-prose-body: var(--color-ink-body);
+  --tw-prose-headings: var(--color-ink);
+  --tw-prose-lead: var(--color-ink-muted);
+  --tw-prose-links: var(--color-accent);
+  --tw-prose-bold: var(--color-ink);
+  --tw-prose-counters: var(--color-ink-subtle);
+  --tw-prose-bullets: var(--color-ink-subtle);
+  --tw-prose-hr: var(--color-line);
+  --tw-prose-quotes: var(--color-ink);
+  --tw-prose-quote-borders: var(--color-accent);
+  --tw-prose-captions: var(--color-ink-subtle);
+  --tw-prose-kbd: var(--color-ink);
+  --tw-prose-code: var(--color-ink);
+  --tw-prose-th-borders: var(--color-line);
+  --tw-prose-td-borders: var(--color-line);
+  line-height: 1.75;
+}
+.prose :where(h2, h3, h4) {
+  @apply font-display;
+}
+.prose :where(a) {
+  @apply font-medium underline decoration-accent/30 underline-offset-4 transition-colors hover:decoration-accent;
+}
+.prose :where(code):not(:where(pre code)) {
+  @apply rounded-md border border-line bg-subtle px-1.5 py-0.5 font-normal before:content-none after:content-none;
+}
+.prose :where(blockquote) {
+  @apply rounded-r-lg bg-accent-soft py-1 font-normal not-italic;
+}
+
+/* ---------- Code blocks (Shiki dual theme via CSS variables) ---------- */
+.shiki {
+  color: var(--shiki-light);
+  background-color: var(--color-code-bg) !important;
+}
+.shiki span {
+  color: var(--shiki-light);
+}
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
+}
+.prose pre.shiki {
+  @apply rounded-xl border border-line p-4 font-mono text-[0.85rem] leading-relaxed;
+}
+
+/* ---------- Mermaid ---------- */
+.mermaid-diagram {
+  @apply my-8 flex justify-center overflow-x-auto rounded-2xl border border-line bg-card p-6 shadow-sm;
+}
+.mermaid-diagram:not([data-rendered]) {
+  @apply min-h-24 font-mono text-xs whitespace-pre text-ink-subtle;
+}
+
+/* ---------- Shared form controls (admin) ---------- */
+@utility field {
+  @apply w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink shadow-sm transition outline-none placeholder:text-ink-subtle focus:border-accent focus:ring-4 focus:ring-accent/15 aria-invalid:border-danger;
+}
